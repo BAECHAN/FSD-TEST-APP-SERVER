@@ -80,6 +80,7 @@ app.post(`${preUrl}/token`, (req, res) => {
   });
 });
 
+// 로그아웃
 app.post(`${preUrl}/logout`, (req, res) => {
   const refreshToken = req.body.token;
   refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
