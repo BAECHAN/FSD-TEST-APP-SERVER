@@ -105,7 +105,7 @@ app.get(`${preUrl}/board`, authenticateToken, (req, res) => {
 });
 
 // 데이터베이스에서 데이터 가져오기
-app.get(`${preUrl}/data`, authenticateToken, async (req, res) => {
+app.get(`${preUrl}/user-list`, authenticateToken, async (req, res) => {
   let conn;
   try {
     console.log("Attempting to connect to the database...");
