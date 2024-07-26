@@ -3,6 +3,18 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
+const mariadb = require("mariadb");
+const dotenv = require("dotenv");
+
+dotenv.config();
+
+const pool = mariadb.createPool({
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
+});
 
 const app = express();
 const port = 5174;
@@ -92,6 +104,22 @@ app.get(`${preUrl}/board`, authenticateToken, (req, res) => {
   res.json(fakeBoards);
 });
 
+// 데이터베이스에서 데이터 가져오기
+app.get(`${preUrl}/data`, authenticateToken, async (req, res) => {
+  let conn;
+  try {
+    console.log("Attempting to connect to the database...");
+    conn = await pool.getConnection();
+    console.log("Connected to the database");
+    const rows = await conn.query("SELECT * FROM testtable");
+    res.json(rows);
+  } catch (err) {
+    console.error("Database query error", err);
+    res.status(500).send("Database query error");
+  } finally {
+    if (conn) conn.release(); // 연결 해제
+  }
+});
 function generateAccessToken(user) {
   return jwt.sign(user, ACCESS_TOKEN_SECRET, { expiresIn: "15m" });
 }
