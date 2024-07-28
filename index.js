@@ -120,8 +120,44 @@ app.get(`${preUrl}/user-list`, authenticateToken, async (req, res) => {
     if (conn) conn.release(); // 연결 해제
   }
 });
+
+// 사용자 정보 수정 API
+app.put(`${preUrl}/user-info`, authenticateToken, async (req, res) => {
+  const { id, name, age, email } = req.body;
+
+  if (!id || !name || !age || !email) {
+    return res.status(400).send("All fields are required");
+  }
+
+  let conn;
+  try {
+    console.log("Attempting to connect to the database...");
+    conn = await pool.getConnection();
+    console.log("Connected to the database");
+
+    const query = `
+      UPDATE testtable
+      SET name = ?, age = ?, email = ?
+      WHERE id = ?
+    `;
+
+    const result = await conn.query(query, [name, age, email, id]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).send("User not found");
+    }
+
+    res.status(200).send("User information updated successfully");
+  } catch (err) {
+    console.error("Database query error", err);
+    res.status(500).send("Database query error");
+  } finally {
+    if (conn) conn.release(); // 연결 해제
+  }
+});
+
 function generateAccessToken(user) {
-  return jwt.sign(user, ACCESS_TOKEN_SECRET, { expiresIn: "15m" });
+  return jwt.sign(user, ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
 }
 
 function authenticateToken(req, res, next) {
